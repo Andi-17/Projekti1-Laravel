@@ -21,8 +21,14 @@ class Car extends Model
     'currency',
     'status',
     'featured',
-    'main_image'
+    'main_image',
+    'comapny_id'
 ];
+
+public function company()
+{
+    return $this->belongsTo(\App\Models\Company::class);
+}
 
     public function brand()
     {

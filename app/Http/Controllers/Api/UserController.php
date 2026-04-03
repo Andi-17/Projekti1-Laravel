@@ -74,15 +74,18 @@ class UserController extends Controller
         return new UserResource($user->fresh('role'));
     }
 
-    public function destroy(User $user)
+    public function destroy(User $user, ImageRepository $imageRepo)
     {
+        if ($user->avatar) {
+            $imageRepo->delete($user->avatar);
+        }
+    
         $user->delete();
-
+    
         return response()->json([
             'message' => 'User deleted successfully',
         ], 200);
     }
-
     
  
 

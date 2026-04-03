@@ -86,6 +86,31 @@ class AuthController extends Controller
         'user' => new UserResource($request->user())
     ]);
 }
+
+
+public function refresh(Request $request)
+{
+    $request->validate([
+        'refresh_token' => 'required|string'
+    ]);
+
+    $token = PersonalAccessToken::findToken($request->refresh_token);
+
+    if (!$token) {
+        return response()->json(['message' => 'Invalid refresh token'], 401);
+    }
+
+    $user = $token->tokenable;
+
+   
+    $token->delete();
+
+    return response()->json([
+        'access_token' => $user->createToken('access-token')->plainTextToken,
+        'token_type' => 'Bearer',
+    ]);
+}
+
 }
 
 

@@ -9,13 +9,12 @@ use App\Repositories\ImageRepository;
 
 class CarBrandController extends Controller
 {
-    // Shfaq të gjitha brandet me pagination
+  
     public function index()
     {   
         return response()->json(CarBrand::paginate(10), 200);
     }
 
-    // Krijo brand të ri
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -34,13 +33,12 @@ class CarBrandController extends Controller
         ], 201);
     }
 
-    // Shfaq një brand me modelet e tij
+    
     public function show(CarBrand $carBrand)
     {
         return response()->json($carBrand->load('models'), 200);
     }
 
-    // Update brand ekzistues
     public function update(Request $request, CarBrand $carBrand)
     {
         $data = $request->validate([
@@ -57,19 +55,19 @@ class CarBrandController extends Controller
         ], 200);
     }
 
-    // Fshij brand
-    public function destroy(CarBrand $carBrand)
+    public function destroy(CarBrand $carBrand, ImageRepository $imageRepo)
     {
+      
+        if ($carBrand->logo) {
+            $imageRepo->delete($carBrand->logo);
+        }
+    
         $carBrand->delete();
-
+    
         return response()->json([
             'message' => 'Brand deleted successfully'
         ], 200);
-    }
-
-
-
-public function uploadLogo(Request $request, CarBrand $carBrand, ImageRepository $imageRepo)
+    }public function uploadLogo(Request $request, CarBrand $carBrand, ImageRepository $imageRepo)
 {
     $request->validate([
         'logo' => ['required', 'image   ', 'max:2048']
