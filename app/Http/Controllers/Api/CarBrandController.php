@@ -67,7 +67,8 @@ class CarBrandController extends Controller
         return response()->json([
             'message' => 'Brand deleted successfully'
         ], 200);
-    }public function uploadLogo(Request $request, CarBrand $carBrand, ImageRepository $imageRepo)
+    }
+    public function uploadLogo(Request $request, CarBrand $carBrand, ImageRepository $imageRepo)
 {
     $request->validate([
         'logo' => ['required', 'image   ', 'max:2048']

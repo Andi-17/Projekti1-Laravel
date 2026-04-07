@@ -16,11 +16,10 @@ class Company extends Model
         'address',
         'city',
         'country',
-        'owner_id',
         'business_number',
         'vat_number',
-        'is_active',
-        'logo_path',
+        'owner_id',
+        'logo', 
     ];
 
 

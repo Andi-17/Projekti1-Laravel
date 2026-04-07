@@ -10,6 +10,8 @@ use App\Http\Controllers\Api\CarModelController;
 use App\Http\Controllers\Api\CarController;
 use Laravel\Sanctum\PersonalAccessToken;
 use App\Http\Controllers\Api\CompanyController;
+use App\Http\Controllers\Api\ClientController;
+
 
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -80,4 +82,17 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::apiResource('car-brands', CarBrandController::class);
     Route::apiResource('car-models', CarModelController::class);
 
+});
+
+
+
+Route::middleware('auth:sanctum')->group(function () {
+
+    // 📋 Clients CRUD
+    Route::get('/clients', [ClientController::class, 'index']);
+    Route::post('/clients', [ClientController::class, 'store']);
+
+    Route::get('/clients/{client}', [ClientController::class, 'show']);
+    Route::put('/clients/{client}', [ClientController::class, 'update']);
+    Route::delete('/clients/{client}', [ClientController::class, 'destroy']);
 });
