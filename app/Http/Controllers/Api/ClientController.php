@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Models\Client;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 
 class ClientController extends Controller
 {
@@ -21,37 +22,47 @@ class ClientController extends Controller
 
     public function store(Request $request)
     {
-        $user = $request->user();
+        $user = Auth::user();
 
+
+        // if (!$user || !$user->company_id) {
+        //     return response()->json([
+        //         'message' => 'User has no company assigned'
+        //     ], 403);
+        // }
+    
         $data = $request->validate([
             'client_type' => 'required|in:business,private',
-
+    
             'business_name' => 'required_if:client_type,business|string|max:255',
             'additional_company_name' => 'nullable|string|max:255',
-
+    
             'first_name' => 'required_if:client_type,private|string|max:255',
             'last_name' => 'required_if:client_type,private|string|max:255',
-
+    
             'street' => 'nullable|string',
             'building_number' => 'nullable|string',
             'additional_address_info' => 'nullable|string',
             'city' => 'nullable|string',
             'country' => 'nullable|string',
-
+    
             'email' => 'nullable|email',
             'phone' => 'nullable|string',
             'mobile' => 'nullable|string',
 
+            'company_id' => 'nullable|integer',
+    
             'client_language' => 'nullable|string',
             'remarks' => 'nullable|string',
             'category' => 'nullable|string',
             'employees_count' => 'nullable|integer',
         ]);
+    
+      
+        $data['company_id'] = $data['company_id'];
+        $data['client_type'] = $data['client_type'];
+    
 
-        
-        $data['company_id'] = $user->company_id;
-
-        
         if ($data['client_type'] === 'business') {
             $data['first_name'] = null;
             $data['last_name'] = null;
@@ -59,9 +70,9 @@ class ClientController extends Controller
             $data['business_name'] = null;
             $data['additional_company_name'] = null;
         }
-
+    
         $client = Client::create($data);
-
+    
         return response()->json([
             'message' => 'Client created',
             'client' => $client
@@ -82,13 +93,13 @@ class ClientController extends Controller
         $this->authorizeClient($request, $client);
 
         $data = $request->validate([
-            'client_type' => 'required|in:business,private',
+            'client_type' => 'nullable|in:business,private',
 
-            'business_name' => 'required_if:client_type,business|string|max:255',
+            'business_name' => 'nullable|string|max:255',
             'additional_company_name' => 'nullable|string|max:255',
 
-            'first_name' => 'required_if:client_type,private|string|max:255',
-            'last_name' => 'required_if:client_type,private|string|max:255',
+            'first_name' => 'nullable|string|max:255',
+            'last_name' => 'nullable|string|max:255',
 
             'street' => 'nullable|string',
             'building_number' => 'nullable|string',
@@ -107,13 +118,6 @@ class ClientController extends Controller
         ]);
 
         
-        if ($data['client_type'] === 'business') {
-            $data['first_name'] = null;
-            $data['last_name'] = null;
-        } else {
-            $data['business_name'] = null;
-            $data['additional_company_name'] = null;
-        }
 
         $client->update($data);
 
@@ -123,13 +127,26 @@ class ClientController extends Controller
         ]);
     }
 
-   
-    public function destroy(Request $request, Client $client)
+    public function destroy($id)
     {
-        $this->authorizeClient($request, $client);
-
+        $user = Auth::user();
+    
+        $client = Client::find($id);
+    
+        if (!$client) {
+            return response()->json([
+                'message' => 'Client not found'
+            ], 404);
+        }
+    
+        if ($client->company_id !== $user->company_id) {
+            return response()->json([
+                'message' => 'Unauthorized'
+            ], 403);
+        }
+    
         $client->delete();
-
+    
         return response()->json([
             'message' => 'Client deleted'
         ]);
@@ -137,8 +154,12 @@ class ClientController extends Controller
 
     private function authorizeClient(Request $request, Client $client)
     {
-        if ($client->company_id !== $request->user()->company_id) {
-            abort(403, 'Unauthorized');
+        $user = Auth::user();
+    
+        if (!$user || $client->company_id !== $user->company_id) {
+            return response()->json([
+                'message' => 'Unauthorized'
+            ], 403);
         }
     }
 }
